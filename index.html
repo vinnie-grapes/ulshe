@@ -1,0 +1,1026 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0d0d">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Уличный аудиоархив. Введите код со стикера, чтобы услышать город.">
+  <title>УЛИЦЫ ШЕПЧУТ — уличный аудиоархив</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --panel: #121616;
+      --cyan: #00ffff;
+      --green: #39ff14;
+      --red: #b95b61;
+      --muted: #778080;
+      --text: #d9ffff;
+      --line: rgba(0, 255, 255, 0.28);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-height: 100%; background: var(--bg); }
+
+    body {
+      min-height: 100svh;
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        linear-gradient(rgba(0, 255, 255, 0.018) 1px, transparent 1px),
+        var(--bg);
+      background-size: 100% 4px;
+      color: var(--text);
+      font-family: "Courier New", Courier, monospace;
+      -webkit-font-smoothing: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+      background: radial-gradient(circle at 50% 35%, transparent 0 35%, rgba(0,0,0,.45) 100%);
+    }
+
+    button, input { font: inherit; }
+
+    button { touch-action: manipulation; }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .screen {
+      width: 100%;
+      min-height: 100svh;
+      position: relative;
+      z-index: 1;
+      transition: opacity .36s ease, transform .36s ease, visibility .36s;
+    }
+
+    .screen[hidden] { display: none; }
+
+    .screen.is-leaving {
+      opacity: 0;
+      transform: translateY(-10px);
+      visibility: hidden;
+    }
+
+    .screen.is-entering {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .access-screen {
+      display: grid;
+      place-items: center;
+      padding: calc(30px + var(--safe-top)) 22px calc(30px + var(--safe-bottom));
+    }
+
+    .terminal {
+      width: min(100%, 440px);
+      text-align: center;
+    }
+
+    .eyebrow {
+      margin: 0 0 32px;
+      color: var(--cyan);
+      font-size: .72rem;
+      letter-spacing: .18em;
+      opacity: .72;
+    }
+
+    .prompt {
+      margin: 0 auto 22px;
+      max-width: 34ch;
+      color: var(--text);
+      font-size: clamp(1rem, 4.7vw, 1.26rem);
+      line-height: 1.5;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    .prompt-brackets {
+      display: block;
+      margin-top: 8px;
+      color: var(--green);
+      text-shadow: 0 0 9px rgba(57,255,20,.65);
+    }
+
+    .code-wrap {
+      width: 142px;
+      margin: 0 auto 22px;
+      position: relative;
+    }
+
+    .code-input {
+      width: 100%;
+      height: 74px;
+      border: 1px solid var(--cyan);
+      border-radius: 0;
+      outline: 0;
+      background: rgba(0, 255, 255, .035);
+      color: var(--cyan);
+      caret-color: var(--green);
+      font-size: 2.35rem;
+      font-weight: 700;
+      letter-spacing: .28em;
+      text-align: center;
+      text-indent: .28em;
+      box-shadow: 0 0 0 1px rgba(0,255,255,.08), inset 0 0 20px rgba(0,255,255,.03);
+      transition: border-color .15s, box-shadow .15s, color .15s;
+    }
+
+    .code-input:focus {
+      box-shadow: 0 0 18px rgba(0,255,255,.18), inset 0 0 20px rgba(0,255,255,.05);
+    }
+
+    .code-input.is-error {
+      color: #ff5361;
+      border-color: #ff5361;
+      animation: error-flash .34s steps(2, end) 2;
+      box-shadow: 0 0 18px rgba(255,83,97,.25);
+    }
+
+    @keyframes error-flash {
+      0%, 100% { opacity: 1; transform: translateX(0); }
+      35% { opacity: .42; transform: translateX(-4px); }
+      70% { opacity: 1; transform: translateX(4px); }
+    }
+
+    .neon-button {
+      width: 100%;
+      min-height: 58px;
+      padding: 14px 16px;
+      border: 1px solid var(--green);
+      border-radius: 0;
+      background: transparent;
+      color: var(--green);
+      cursor: pointer;
+      font-size: .82rem;
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      box-shadow: inset 0 0 0 rgba(57,255,20,0), 0 0 12px rgba(57,255,20,.08);
+      transition: color .15s, background .15s, box-shadow .15s, transform .1s;
+    }
+
+    .neon-button:active {
+      transform: translateY(1px);
+      background: var(--green);
+      color: var(--bg);
+      box-shadow: 0 0 20px rgba(57,255,20,.35);
+    }
+
+    .neon-button:focus-visible,
+    .play-button:focus-visible,
+    .back-button:focus-visible,
+    .timeline:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 3px;
+    }
+
+    .neon-button:disabled { opacity: .45; cursor: wait; }
+
+    .feedback {
+      min-height: 2.7em;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: .72rem;
+      line-height: 1.4;
+      letter-spacing: .05em;
+    }
+
+    .feedback.is-error { color: #ff6872; }
+    .feedback.is-loading { color: var(--cyan); }
+
+    .track-screen {
+      padding-bottom: calc(28px + var(--safe-bottom));
+    }
+
+    .track-shell { width: min(100%, 620px); margin: 0 auto; }
+
+    .photo-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      background: #111;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .photo-frame::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(to bottom, transparent 62%, var(--bg) 100%);
+    }
+
+    .photo-frame::before {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent 0 5px,
+          rgba(255,255,255,.07) 6px,
+          transparent 7px 11px
+        ),
+        linear-gradient(90deg, rgba(255,0,70,.08), transparent 35%, rgba(0,255,255,.09));
+      mix-blend-mode: screen;
+    }
+
+    .photo-frame.is-destroyed::before {
+      animation: glitch-overlay 5.2s steps(1, end) infinite;
+    }
+
+    .location-photo {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      filter: saturate(.7) contrast(1.14);
+    }
+
+    .location-photo.is-destroyed {
+      filter: grayscale(1) contrast(1.2);
+      animation: destroyed-glitch 5.2s steps(1, end) infinite;
+    }
+
+    @keyframes destroyed-glitch {
+      0%, 88%, 92%, 96%, 100% {
+        transform: translate(0, 0) scale(1);
+        clip-path: inset(0 0 0 0);
+      }
+      89% {
+        transform: translate(-3px, 1px) scale(1.008);
+        clip-path: inset(12% 0 58% 0);
+      }
+      90% {
+        transform: translate(4px, -1px) scale(1.012);
+        clip-path: inset(63% 0 10% 0);
+      }
+      91%, 95% {
+        transform: translate(-1px, 0) scale(1.005);
+        clip-path: inset(0 0 0 0);
+      }
+      93% {
+        transform: translate(2px, 2px) scale(1.01);
+        clip-path: inset(35% 0 34% 0);
+      }
+      94% {
+        transform: translate(-4px, -1px) scale(1.012);
+        clip-path: inset(76% 0 5% 0);
+      }
+    }
+
+    @keyframes glitch-overlay {
+      0%, 88%, 92%, 96%, 100% { opacity: 0; transform: translateX(0); }
+      89% { opacity: .42; transform: translateX(3px); }
+      90% { opacity: .18; transform: translateX(-5px); }
+      91% { opacity: .35; transform: translateX(1px); }
+      93% { opacity: .48; transform: translateX(-3px); }
+      94% { opacity: .22; transform: translateX(5px); }
+      95% { opacity: .38; transform: translateX(-1px); }
+    }
+
+    .photo-code {
+      position: absolute;
+      z-index: 2;
+      top: calc(16px + var(--safe-top));
+      left: 16px;
+      padding: 5px 7px;
+      border: 1px solid rgba(0,255,255,.6);
+      background: rgba(13,13,13,.72);
+      color: var(--cyan);
+      font-size: .7rem;
+      letter-spacing: .1em;
+    }
+
+    .track-content { padding: 18px 20px 0; }
+
+    .track-title {
+      margin: 0;
+      color: var(--cyan);
+      font-size: clamp(1.55rem, 8vw, 2.45rem);
+      line-height: 1.06;
+      overflow-wrap: anywhere;
+      text-transform: uppercase;
+      text-shadow: 0 0 14px rgba(0,255,255,.18);
+    }
+
+    .location {
+      margin: 12px 0 28px;
+      color: #a5b1b1;
+      font-size: .82rem;
+      line-height: 1.5;
+    }
+
+    .location::before { content: "// "; color: var(--green); }
+
+    .player {
+      padding: 18px 0 20px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .player-main {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .play-button {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--cyan);
+      border-radius: 50%;
+      background: rgba(0,255,255,.03);
+      color: var(--cyan);
+      cursor: pointer;
+      font-size: 1rem;
+      box-shadow: 0 0 14px rgba(0,255,255,.12);
+    }
+
+    .play-button:active { background: rgba(0,255,255,.16); }
+
+    .timeline-wrap { min-width: 0; }
+
+    .timeline {
+      --progress: 0%;
+      width: 100%;
+      height: 28px;
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .timeline::-webkit-slider-runnable-track {
+      height: 3px;
+      background: linear-gradient(to right, var(--cyan) var(--progress), #303838 var(--progress));
+    }
+
+    .timeline::-moz-range-track { height: 3px; background: #303838; }
+    .timeline::-moz-range-progress { height: 3px; background: var(--cyan); }
+
+    .timeline::-webkit-slider-thumb {
+      width: 15px;
+      height: 15px;
+      margin-top: -6px;
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid var(--cyan);
+      border-radius: 50%;
+      background: var(--bg);
+      box-shadow: 0 0 8px rgba(0,255,255,.55);
+    }
+
+    .timeline::-moz-range-thumb {
+      width: 13px;
+      height: 13px;
+      border: 1px solid var(--cyan);
+      border-radius: 50%;
+      background: var(--bg);
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: -2px;
+      color: var(--muted);
+      font-size: .68rem;
+      letter-spacing: .08em;
+    }
+
+    .audio-message {
+      min-height: 1em;
+      margin: 10px 0 0 72px;
+      color: var(--red);
+      font-size: .68rem;
+      line-height: 1.4;
+    }
+
+    .status-block {
+      margin: 24px 0 30px;
+      padding: 14px 15px;
+      border-left: 2px solid currentColor;
+      background: rgba(255,255,255,.025);
+    }
+
+    .status-label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: .64rem;
+      letter-spacing: .15em;
+    }
+
+    .status-text {
+      display: block;
+      font-size: .82rem;
+      font-weight: 700;
+      line-height: 1.4;
+      letter-spacing: .04em;
+      overflow-wrap: anywhere;
+    }
+
+    .status-block.is-alive { color: var(--green); }
+    .status-block.is-destroyed { color: var(--red); opacity: .82; }
+    .status-block.is-unknown { color: var(--muted); }
+
+    .share-button {
+      width: 100%;
+      min-height: 48px;
+      margin: -14px 0 28px;
+      border: 1px solid rgba(0,255,255,.65);
+      border-radius: 0;
+      background: rgba(0,255,255,.025);
+      color: var(--cyan);
+      cursor: pointer;
+      font-size: .74rem;
+      font-weight: 700;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      box-shadow: 0 0 12px rgba(0,255,255,.07), inset 0 0 12px rgba(0,255,255,.025);
+      transition: color .15s, background .15s, box-shadow .15s, transform .1s;
+    }
+
+    .share-button:active {
+      transform: translateY(1px);
+      background: var(--cyan);
+      color: var(--bg);
+      box-shadow: 0 0 18px rgba(0,255,255,.28);
+    }
+
+    .share-button:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 3px;
+    }
+
+    .copy-toast {
+      position: fixed;
+      z-index: 30;
+      left: 50%;
+      bottom: calc(22px + var(--safe-bottom));
+      width: max-content;
+      max-width: calc(100% - 40px);
+      padding: 11px 14px;
+      border: 1px solid var(--green);
+      background: rgba(13,13,13,.96);
+      color: var(--green);
+      font-size: .7rem;
+      line-height: 1.4;
+      letter-spacing: .04em;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 10px);
+      transition: opacity .2s ease, transform .2s ease;
+      box-shadow: 0 0 18px rgba(57,255,20,.16);
+    }
+
+    .copy-toast.is-visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .back-button {
+      width: 100%;
+      min-height: 52px;
+      border: 1px solid #465151;
+      border-radius: 0;
+      background: transparent;
+      color: #aab5b5;
+      cursor: pointer;
+      font-size: .78rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .back-button:active { border-color: var(--cyan); color: var(--cyan); }
+
+    @media (min-width: 620px) {
+      .track-screen { padding-top: calc(26px + var(--safe-top)); }
+      .photo-frame { border: 1px solid var(--line); }
+      .track-content { padding-inline: 0; }
+      .neon-button:hover { background: var(--green); color: var(--bg); }
+      .share-button:hover { background: var(--cyan); color: var(--bg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="screen access-screen" id="accessScreen" aria-labelledby="accessTitle">
+      <div class="terminal">
+        <p class="eyebrow">УЛИЦЫ ШЕПЧУТ / ГОРОДСКОЙ КАНАЛ</p>
+        <h1 class="prompt" id="accessTitle">
+          Введите номер трека с уличного стикера:
+          <span class="prompt-brackets" aria-hidden="true">[ _ _ ]</span>
+        </h1>
+
+        <form id="codeForm" novalidate>
+          <div class="code-wrap">
+            <label for="codeInput" class="visually-hidden">Двузначный номер трека</label>
+            <input
+              class="code-input"
+              id="codeInput"
+              name="code"
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]{2}"
+              maxlength="2"
+              autocomplete="off"
+              enterkeyhint="go"
+              aria-describedby="feedback"
+              autofocus
+            >
+          </div>
+          <button class="neon-button" id="connectButton" type="submit">
+            Подключиться к аудиопотоку
+          </button>
+          <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="screen track-screen" id="trackScreen" aria-labelledby="trackTitle" hidden>
+      <article class="track-shell">
+        <div class="photo-frame">
+          <img class="location-photo" id="locationPhoto" src="" alt="" decoding="async">
+          <span class="photo-code" id="photoCode"></span>
+        </div>
+
+        <div class="track-content">
+          <h2 class="track-title" id="trackTitle"></h2>
+          <p class="location" id="trackLocation"></p>
+
+          <div class="player">
+            <audio id="audio" preload="metadata"></audio>
+            <div class="player-main">
+              <button class="play-button" id="playButton" type="button" aria-label="Воспроизвести">
+                <span id="playIcon" aria-hidden="true">▶</span>
+              </button>
+              <div class="timeline-wrap">
+                <input class="timeline" id="timeline" type="range" min="0" max="100" value="0" step="0.1" aria-label="Позиция в треке">
+                <div class="time-row" aria-live="off">
+                  <span id="currentTime">00:00</span>
+                  <span id="duration">--:--</span>
+                </div>
+              </div>
+            </div>
+            <p class="audio-message" id="audioMessage" role="status"></p>
+          </div>
+
+          <div class="status-block is-unknown" id="statusBlock">
+            <span class="status-label">СТАТУС_ОБЪЕКТА</span>
+            <span class="status-text" id="statusText"></span>
+          </div>
+
+          <button class="share-button" id="shareButton" type="button" aria-label="Поделиться текущим треком">
+            ↗ Поделиться звуком
+          </button>
+
+          <button class="back-button" id="backButton" type="button">← Вернуться в город</button>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <div class="copy-toast" id="copyToast" role="status" aria-live="polite">
+    Ссылка скопирована в буфер
+  </div>
+
+  <script>
+    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTdv162_Q1nZ1yX5qUpynfjhyrdzPMb4p5CHxHsHGRRjBgXLsuygOZgIBr8jCLaAr8dvNHmJWmDuEnH/pub?output=csv";
+
+    const accessScreen = document.getElementById("accessScreen");
+    const trackScreen = document.getElementById("trackScreen");
+    const codeForm = document.getElementById("codeForm");
+    const codeInput = document.getElementById("codeInput");
+    const connectButton = document.getElementById("connectButton");
+    const feedback = document.getElementById("feedback");
+    const locationPhoto = document.getElementById("locationPhoto");
+    const photoCode = document.getElementById("photoCode");
+    const trackTitle = document.getElementById("trackTitle");
+    const trackLocation = document.getElementById("trackLocation");
+    const statusBlock = document.getElementById("statusBlock");
+    const statusText = document.getElementById("statusText");
+    const audio = document.getElementById("audio");
+    const playButton = document.getElementById("playButton");
+    const playIcon = document.getElementById("playIcon");
+    const timeline = document.getElementById("timeline");
+    const currentTime = document.getElementById("currentTime");
+    const duration = document.getElementById("duration");
+    const audioMessage = document.getElementById("audioMessage");
+    const backButton = document.getElementById("backButton");
+    const shareButton = document.getElementById("shareButton");
+    const copyToast = document.getElementById("copyToast");
+    const photoFrame = locationPhoto.closest(".photo-frame");
+
+    let trackDatabase = null;
+    let isSeeking = false;
+    let currentCode = null;
+    let copyToastTimer = null;
+
+    function normalizeCode(value) {
+      const digits = String(value ?? "").replace(/\D/g, "").slice(0, 2);
+      return digits.length === 1 ? digits.padStart(2, "0") : digits;
+    }
+
+    // CSV-парсер поддерживает запятые, кавычки и переносы строк внутри ячеек.
+    function parseCSV(csvText) {
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let insideQuotes = false;
+
+      for (let i = 0; i < csvText.length; i += 1) {
+        const char = csvText[i];
+        const next = csvText[i + 1];
+
+        if (char === '"' && insideQuotes && next === '"') {
+          cell += '"';
+          i += 1;
+        } else if (char === '"') {
+          insideQuotes = !insideQuotes;
+        } else if (char === "," && !insideQuotes) {
+          row.push(cell);
+          cell = "";
+        } else if ((char === "\n" || char === "\r") && !insideQuotes) {
+          if (char === "\r" && next === "\n") i += 1;
+          row.push(cell);
+          if (row.some((value) => value.trim() !== "")) rows.push(row);
+          row = [];
+          cell = "";
+        } else {
+          cell += char;
+        }
+      }
+
+      row.push(cell);
+      if (row.some((value) => value.trim() !== "")) rows.push(row);
+      return rows;
+    }
+
+    function csvToDatabase(csvText) {
+      const rows = parseCSV(csvText.replace(/^\uFEFF/, ""));
+      if (rows.length < 2) throw new Error("В таблице нет данных");
+
+      const headers = rows[0].map((header) => header.trim().toLowerCase());
+      const required = ["code", "title", "location", "status"];
+      if (!required.every((header) => headers.includes(header))) {
+        throw new Error("Неверные заголовки таблицы");
+      }
+
+      return rows.slice(1).reduce((database, values) => {
+        const item = {};
+        headers.forEach((header, index) => {
+          item[header] = (values[index] || "").trim();
+        });
+
+        const code = normalizeCode(item.code);
+        if (/^\d{2}$/.test(code)) database[code] = { ...item, code };
+        return database;
+      }, {});
+    }
+
+    async function loadTrackDatabase() {
+      if (trackDatabase) return trackDatabase;
+      if (!GOOGLE_SHEET_CSV_URL || GOOGLE_SHEET_CSV_URL.includes("ССЫЛКА_")) {
+        throw new Error("Сначала укажите CSV-ссылку Google Таблицы в коде");
+      }
+
+      const response = await fetch(GOOGLE_SHEET_CSV_URL, { cache: "no-store" });
+      if (!response.ok) throw new Error(`Google Таблица недоступна (${response.status})`);
+      trackDatabase = csvToDatabase(await response.text());
+      return trackDatabase;
+    }
+
+    function setFeedback(message = "", state = "") {
+      feedback.textContent = message;
+      feedback.className = `feedback${state ? ` is-${state}` : ""}`;
+    }
+
+    function flashInputError(message) {
+      setFeedback(message, "error");
+      codeInput.classList.remove("is-error");
+      void codeInput.offsetWidth;
+      codeInput.classList.add("is-error");
+      window.setTimeout(() => codeInput.classList.remove("is-error"), 750);
+    }
+
+    function transitionScreens(from, to) {
+      from.classList.add("is-leaving");
+      window.setTimeout(() => {
+        from.hidden = true;
+        from.classList.remove("is-leaving");
+        to.hidden = false;
+        to.classList.add("is-entering");
+        void to.offsetWidth;
+        to.classList.remove("is-entering");
+      }, 360);
+    }
+
+    function formatTime(seconds) {
+      if (!Number.isFinite(seconds) || seconds < 0) return "--:--";
+      const minutes = Math.floor(seconds / 60);
+      const rest = Math.floor(seconds % 60);
+      return `${String(minutes).padStart(2, "0")}:${String(rest).padStart(2, "0")}`;
+    }
+
+    function updatePlayState() {
+      const isPlaying = !audio.paused && !audio.ended;
+      playIcon.textContent = isPlaying ? "Ⅱ" : "▶";
+      playButton.setAttribute("aria-label", isPlaying ? "Поставить на паузу" : "Воспроизвести");
+    }
+
+    function resetPlayer() {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+      timeline.value = 0;
+      timeline.style.setProperty("--progress", "0%");
+      currentTime.textContent = "00:00";
+      duration.textContent = "--:--";
+      audioMessage.textContent = "";
+      updatePlayState();
+    }
+
+    function showTrack(track, isRandom = false) {
+      const code = track.code;
+      const destroyed = (track.status || "").toUpperCase().includes("УНИЧТОЖЕН");
+      currentCode = code;
+      document.title = `${track.title || `ТРЕК ${code}`} — ЗВУК ВОКРУГ`;
+      photoCode.textContent = `ID_${code}`;
+      trackTitle.textContent = `${isRandom ? "🎲 [РАНДОМ МИКС] " : ""}${track.title || `ТРЕК ${code}`}`;
+      trackLocation.textContent = track.location || "Координаты не указаны";
+      locationPhoto.src = `img/photo${code}.jpg`;
+      locationPhoto.alt = track.location
+        ? `Локация трека: ${track.location}`
+        : `Локация трека ${code}`;
+
+      statusText.textContent = track.status || "СТАТУС НЕИЗВЕСТЕН";
+      locationPhoto.classList.toggle("is-destroyed", destroyed);
+      photoFrame.classList.toggle("is-destroyed", destroyed);
+
+      const upperStatus = (track.status || "").toUpperCase();
+      statusBlock.className = "status-block " + (
+        upperStatus.includes("УНИЧТОЖЕН") ? "is-destroyed" :
+        upperStatus.includes("ЖИВ") ? "is-alive" : "is-unknown"
+      );
+
+      resetPlayer();
+      audio.src = `audio/track${code}.mp3`;
+      audio.load();
+      transitionScreens(accessScreen, trackScreen);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function openTrack(code, isRandom = false) {
+      const normalizedCode = normalizeCode(code);
+      const track = trackDatabase?.[normalizedCode];
+      if (!track) return false;
+      showTrack(track, isRandom);
+      return true;
+    }
+
+    function getRandomAliveCode(database) {
+      const aliveCodes = Object.values(database)
+        .filter((track) => !(track.status || "").toUpperCase().includes("УНИЧТОЖЕН"))
+        .map((track) => track.code);
+
+      if (!aliveCodes.length) return null;
+      return aliveCodes[Math.floor(Math.random() * aliveCodes.length)];
+    }
+
+    codeInput.addEventListener("input", () => {
+      codeInput.value = codeInput.value.replace(/\D/g, "").slice(0, 2);
+      setFeedback();
+    });
+
+    codeForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const code = codeInput.value;
+
+      if (!/^\d{2}$/.test(code)) {
+        flashInputError("ОШИБКА: ВВЕДИТЕ ДВЕ ЦИФРЫ");
+        return;
+      }
+
+      connectButton.disabled = true;
+      setFeedback("ПОИСК СИГНАЛА...", "loading");
+
+      try {
+        const database = await loadTrackDatabase();
+        if (code === "00") {
+          const randomCode = getRandomAliveCode(database);
+          if (!randomCode) {
+            flashInputError("НЕТ ДОСТУПНЫХ ЖИВЫХ ТРЕКОВ");
+            return;
+          }
+          setFeedback("СЛУЧАЙНЫЙ СИГНАЛ НАЙДЕН", "loading");
+          openTrack(randomCode, true);
+        } else if (!openTrack(code)) {
+          flashInputError("СИГНАЛ НЕ НАЙДЕН: ПРОВЕРЬТЕ КОД");
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+        flashInputError(error.message || "НЕ УДАЛОСЬ ЗАГРУЗИТЬ БАЗУ ТРЕКОВ");
+      } finally {
+        connectButton.disabled = false;
+      }
+    });
+
+    playButton.addEventListener("click", async () => {
+      audioMessage.textContent = "";
+      if (audio.paused) {
+        try {
+          await audio.play();
+        } catch (error) {
+          console.error(error);
+          audioMessage.textContent = "АУДИОФАЙЛ НЕ НАЙДЕН ИЛИ НЕДОСТУПЕН";
+        }
+      } else {
+        audio.pause();
+      }
+    });
+
+    audio.addEventListener("play", updatePlayState);
+    audio.addEventListener("pause", updatePlayState);
+    audio.addEventListener("ended", updatePlayState);
+
+    audio.addEventListener("loadedmetadata", () => {
+      duration.textContent = formatTime(audio.duration);
+      timeline.max = Number.isFinite(audio.duration) ? audio.duration : 100;
+    });
+
+    audio.addEventListener("timeupdate", () => {
+      if (!isSeeking) timeline.value = audio.currentTime;
+      currentTime.textContent = formatTime(audio.currentTime);
+      const progress = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+      timeline.style.setProperty("--progress", `${progress}%`);
+    });
+
+    audio.addEventListener("error", () => {
+      if (audio.getAttribute("src")) {
+        audioMessage.textContent = "АУДИОФАЙЛ НЕ НАЙДЕН: ПРОВЕРЬТЕ ПАПКУ /audio";
+      }
+    });
+
+    timeline.addEventListener("input", () => {
+      isSeeking = true;
+      const value = Number(timeline.value);
+      currentTime.textContent = formatTime(value);
+      const progress = audio.duration ? (value / audio.duration) * 100 : 0;
+      timeline.style.setProperty("--progress", `${progress}%`);
+    });
+
+    timeline.addEventListener("change", () => {
+      if (Number.isFinite(audio.duration)) audio.currentTime = Number(timeline.value);
+      isSeeking = false;
+    });
+
+    locationPhoto.addEventListener("error", () => {
+      locationPhoto.alt = "Фотография локации не найдена";
+      locationPhoto.style.opacity = ".18";
+    });
+
+    locationPhoto.addEventListener("load", () => {
+      locationPhoto.style.opacity = "1";
+    });
+
+    function showCopyToast(message = "Ссылка скопирована в буфер") {
+      window.clearTimeout(copyToastTimer);
+      copyToast.textContent = message;
+      copyToast.classList.add("is-visible");
+      copyToastTimer = window.setTimeout(() => {
+        copyToast.classList.remove("is-visible");
+      }, 2400);
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      const temporaryInput = document.createElement("textarea");
+      temporaryInput.value = text;
+      temporaryInput.setAttribute("readonly", "");
+      temporaryInput.style.position = "fixed";
+      temporaryInput.style.opacity = "0";
+      document.body.appendChild(temporaryInput);
+      temporaryInput.select();
+      const copied = document.execCommand("copy");
+      temporaryInput.remove();
+      if (!copied) throw new Error("Не удалось скопировать ссылку");
+    }
+
+    function getCurrentTrackUrl() {
+      return `${window.location.origin}${window.location.pathname}?track=${encodeURIComponent(currentCode)}`;
+    }
+
+    shareButton.addEventListener("click", async () => {
+      if (!currentCode) return;
+
+      const shareUrl = getCurrentTrackUrl();
+      const shareData = {
+        title: trackTitle.textContent,
+        text: `Послушай этот звук города: ${trackTitle.textContent}`,
+        url: shareUrl
+      };
+
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData);
+          return;
+        } catch (error) {
+          if (error.name === "AbortError") return;
+          console.warn("Системный шеринг недоступен, копируем ссылку", error);
+        }
+      }
+
+      try {
+        await copyText(shareUrl);
+        showCopyToast();
+      } catch (error) {
+        console.error(error);
+        showCopyToast("Не удалось скопировать ссылку");
+      }
+    });
+
+    backButton.addEventListener("click", () => {
+      resetPlayer();
+      currentCode = null;
+      document.title = "ЗВУК ВОКРУГ — уличный аудиоархив";
+      const cleanUrl = `${window.location.pathname}${window.location.hash}`;
+      window.history.replaceState({}, "", cleanUrl);
+      transitionScreens(trackScreen, accessScreen);
+      codeInput.value = "";
+      setFeedback();
+      window.setTimeout(() => codeInput.focus({ preventScroll: true }), 420);
+    });
+
+    async function initDatabase() {
+      const requestedCode = new URLSearchParams(window.location.search).get("track");
+
+      try {
+        connectButton.disabled = true;
+        if (requestedCode) setFeedback("ЗАГРУЗКА ПЕРЕДАННОГО СИГНАЛА...", "loading");
+        await loadTrackDatabase();
+
+        if (requestedCode) {
+          const normalizedCode = normalizeCode(requestedCode);
+          if (!/^\d{2}$/.test(normalizedCode) || normalizedCode === "00" || !openTrack(normalizedCode)) {
+            flashInputError("ТРЕК ИЗ ССЫЛКИ НЕ НАЙДЕН: ВВЕДИТЕ КОД");
+          }
+        } else {
+          setFeedback();
+        }
+      } catch (error) {
+        console.error(error);
+        flashInputError(error.message || "НЕ УДАЛОСЬ ЗАГРУЗИТЬ БАЗУ ТРЕКОВ");
+      } finally {
+        connectButton.disabled = false;
+      }
+    }
+
+    window.addEventListener("load", initDatabase);
+  </script>
+</body>
+</html>
