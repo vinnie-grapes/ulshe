@@ -976,7 +976,7 @@
           </div>
 
           <div class="status-block is-unknown" id="statusBlock">
-            <span class="status-label">СТАТУС_ОБЪЕКТА</span>
+            <span class="status-label">СТАТУС</span>
             <span class="status-text" id="statusText"></span>
           </div>
 
@@ -1152,9 +1152,27 @@
       updatePlayState();
     }
 
+    function getTrackState(status) {
+      const upperStatus = (status || "").toUpperCase();
+      if (
+        upperStatus.includes("УНИЧТОЖЕН") ||
+        upperStatus.includes("НЕДОСТУПЕН") ||
+        upperStatus.includes("В АРХИВЕ")
+      ) return "archived";
+
+      if (
+        upperStatus.includes("ЖИВ") ||
+        upperStatus.includes("ДОСТУПЕН") ||
+        upperStatus.includes("НА УЛИЦЕ")
+      ) return "street";
+
+      return "unknown";
+    }
+
     function showTrack(track, isRandom = false) {
       const code = track.code;
-      const destroyed = (track.status || "").toUpperCase().includes("УНИЧТОЖЕН");
+      const trackState = getTrackState(track.status);
+      const destroyed = trackState === "archived";
       currentCode = code;
       document.title = `${track.title || `ТРЕК ${code}`} — УЛИЦЫ ШЕПЧУТ`;
       photoCode.textContent = `ID_${code}`;
@@ -1165,14 +1183,16 @@
         ? `Локация трека: ${track.location}`
         : `Локация трека ${code}`;
 
-      statusText.textContent = track.status || "СТАТУС НЕИЗВЕСТЕН";
+      statusText.textContent = (
+        trackState === "archived" ? "В АРХИВЕ" :
+        trackState === "street" ? "НА УЛИЦЕ" : "СОСТОЯНИЕ НЕИЗВЕСТНО"
+      );
       locationPhoto.classList.toggle("is-destroyed", destroyed);
       photoFrame.classList.toggle("is-destroyed", destroyed);
 
-      const upperStatus = (track.status || "").toUpperCase();
       statusBlock.className = "status-block " + (
-        upperStatus.includes("УНИЧТОЖЕН") ? "is-destroyed" :
-        upperStatus.includes("ЖИВ") ? "is-alive" : "is-unknown"
+        trackState === "archived" ? "is-destroyed" :
+        trackState === "street" ? "is-alive" : "is-unknown"
       );
 
       resetPlayer();
@@ -1192,7 +1212,7 @@
 
     function getRandomAliveCode(database) {
       const aliveCodes = Object.values(database)
-        .filter((track) => !(track.status || "").toUpperCase().includes("УНИЧТОЖЕН"))
+        .filter((track) => getTrackState(track.status) !== "archived")
         .map((track) => track.code);
 
       if (!aliveCodes.length) return null;
