@@ -526,7 +526,25 @@
     }
 
     .photo-frame.is-destroyed::before {
-      animation: glitch-overlay 5.2s steps(1, end) infinite;
+      background:
+        radial-gradient(ellipse 58% 38% at 17% 12%, rgba(255,255,255,.52), transparent 72%),
+        radial-gradient(ellipse 42% 68% at 92% 76%, rgba(255,255,255,.28), transparent 74%),
+        linear-gradient(102deg, transparent 0 48%, rgba(255,255,255,.18) 53% 67%, transparent 73%);
+      mix-blend-mode: screen;
+      opacity: .72;
+    }
+
+    .photo-frame.is-destroyed::after {
+      content: "В АРХИВЕ";
+      right: 20px;
+      bottom: 43px;
+      padding: 6px 9px 5px;
+      border: 3px double currentColor;
+      background: rgba(247,247,243,.86);
+      color: var(--red);
+      font-size: .76rem;
+      letter-spacing: .12em;
+      transform: rotate(-4deg);
     }
 
     .location-photo {
@@ -539,46 +557,25 @@
     }
 
     .location-photo.is-destroyed {
-      filter: grayscale(1) contrast(1.2);
-      animation: destroyed-glitch 5.2s steps(1, end) infinite;
+      filter: grayscale(1) contrast(1.55) brightness(1.12);
+      opacity: .86;
     }
 
-    @keyframes destroyed-glitch {
-      0%, 88%, 92%, 96%, 100% {
-        transform: translate(0, 0) scale(1);
-        clip-path: inset(0 0 0 0);
-      }
-      89% {
-        transform: translate(-3px, 1px) scale(1.008);
-        clip-path: inset(12% 0 58% 0);
-      }
-      90% {
-        transform: translate(4px, -1px) scale(1.012);
-        clip-path: inset(63% 0 10% 0);
-      }
-      91%, 95% {
-        transform: translate(-1px, 0) scale(1.005);
-        clip-path: inset(0 0 0 0);
-      }
-      93% {
-        transform: translate(2px, 2px) scale(1.01);
-        clip-path: inset(35% 0 34% 0);
-      }
-      94% {
-        transform: translate(-4px, -1px) scale(1.012);
-        clip-path: inset(76% 0 5% 0);
-      }
+    .archive-echo {
+      display: none;
+      position: absolute;
+      z-index: 1;
+      inset: 9px 9px 29px;
+      width: auto;
+      height: auto;
+      pointer-events: none;
+      filter: grayscale(1) contrast(2) brightness(.62);
+      opacity: .2;
+      transform: translate(4px, -2px);
+      mix-blend-mode: multiply;
     }
 
-    @keyframes glitch-overlay {
-      0%, 88%, 92%, 96%, 100% { opacity: 0; transform: translateX(0); }
-      89% { opacity: .42; transform: translateX(3px); }
-      90% { opacity: .18; transform: translateX(-5px); }
-      91% { opacity: .35; transform: translateX(1px); }
-      93% { opacity: .48; transform: translateX(-3px); }
-      94% { opacity: .22; transform: translateX(5px); }
-      95% { opacity: .38; transform: translateX(-1px); }
-    }
+    .photo-frame.is-destroyed .archive-echo { display: block; }
 
     .photo-code {
       position: absolute;
@@ -951,6 +948,7 @@
       <article class="track-shell">
         <div class="photo-frame">
           <img class="location-photo" id="locationPhoto" src="" alt="" decoding="async">
+          <img class="location-photo archive-echo" id="archiveEcho" src="" alt="" aria-hidden="true" decoding="async">
           <span class="photo-code" id="photoCode"></span>
         </div>
 
@@ -1005,6 +1003,7 @@
     const connectButton = document.getElementById("connectButton");
     const feedback = document.getElementById("feedback");
     const locationPhoto = document.getElementById("locationPhoto");
+    const archiveEcho = document.getElementById("archiveEcho");
     const photoCode = document.getElementById("photoCode");
     const trackTitle = document.getElementById("trackTitle");
     const trackLocation = document.getElementById("trackLocation");
@@ -1179,6 +1178,7 @@
       trackTitle.textContent = `${isRandom ? "[СЛУЧАЙНЫЙ ТРЕК] " : ""}${track.title || `ТРЕК ${code}`}`;
       trackLocation.textContent = track.location || "Координаты не указаны";
       locationPhoto.src = `img/photo${code}.jpg`;
+      archiveEcho.src = `img/photo${code}.jpg`;
       locationPhoto.alt = track.location
         ? `Локация трека: ${track.location}`
         : `Локация трека ${code}`;
