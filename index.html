@@ -8,6 +8,14 @@
   <meta name="description" content="Уличный аудиоархив. Введите код со стикера, чтобы услышать город.">
   <title>УЛИЦЫ ШЕПЧУТ — уличный аудиоархив</title>
   <style>
+    @font-face {
+      font-family: "Shantell Sans";
+      src: url("assets/fonts/ShantellSans-Variable.ttf") format("truetype");
+      font-style: normal;
+      font-weight: 300 800;
+      font-display: swap;
+    }
+
     :root {
       --city: #151515;
       --city-light: #252525;
@@ -17,6 +25,7 @@
       --ink-soft: #55534d;
       --green: #23743a;
       --red: #a3312b;
+      --display-font: "Shantell Sans", "Arial Narrow", Arial, sans-serif;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -150,14 +159,23 @@
       max-width: 19ch;
       color: var(--ink);
       position: relative;
-      font-family: "Marker Felt", "Chalkboard SE", "Comic Sans MS", sans-serif;
+      font-family: var(--display-font);
       font-size: clamp(1.45rem, 6.8vw, 2.35rem);
-      font-weight: 700;
+      font-weight: 650;
       line-height: 1;
       letter-spacing: -.04em;
       text-transform: uppercase;
       transform: rotate(-.5deg);
       text-align: center;
+    }
+
+    .prompt,
+    .code-input,
+    .record-label-title,
+    .print-button,
+    .track-title {
+      font-variation-settings: "wght" 660, "BNCE" -18, "INFM" 76, "SPAC" 2;
+      font-feature-settings: "rlig" 1, "case" 1;
     }
 
     .prompt::after {
@@ -175,7 +193,7 @@
     .prompt-brackets {
       display: block;
       margin-top: 18px;
-      font-family: "Marker Felt", "Chalkboard SE", "Comic Sans MS", sans-serif;
+      font-family: var(--display-font);
       font-size: .92em;
       letter-spacing: .12em;
       color: var(--ink);
@@ -210,9 +228,9 @@
       background: transparent;
       color: var(--ink);
       caret-color: var(--ink);
-      font-family: "Marker Felt", "Chalkboard SE", "Comic Sans MS", sans-serif;
+      font-family: var(--display-font);
       font-size: 2.7rem;
-      font-weight: 900;
+      font-weight: 720;
       letter-spacing: .22em;
       text-align: center;
       text-indent: .22em;
@@ -306,9 +324,9 @@
     }
 
     .record-label-title {
-      font-family: "Marker Felt", "Chalkboard SE", "Comic Sans MS", sans-serif;
+      font-family: var(--display-font);
       font-size: clamp(.72rem, 3.2vw, 1rem);
-      font-weight: 700;
+      font-weight: 640;
       line-height: 1;
       transform: rotate(-2deg);
     }
@@ -369,9 +387,9 @@
       background: var(--paper);
       color: var(--ink);
       cursor: pointer;
-      font-family: "Marker Felt", "Chalkboard SE", "Comic Sans MS", sans-serif;
+      font-family: var(--display-font);
       font-size: 1.3rem;
-      font-weight: 900;
+      font-weight: 680;
       line-height: 1;
       letter-spacing: .06em;
       text-transform: uppercase;
@@ -436,7 +454,7 @@
       display: block;
       padding: 1px 2px 11px;
       border-bottom: 3px solid var(--ink);
-      font-family: "Marker Felt", "Chalkboard SE", "Comic Sans MS", sans-serif;
+      font-family: "Courier New", monospace;
       font-size: .63rem;
       font-weight: 700;
       letter-spacing: .1em;
@@ -450,7 +468,7 @@
       top: 2px;
       right: 16px;
       color: var(--ink);
-      font-family: "Marker Felt", "Comic Sans MS", sans-serif;
+      font-family: "Arial Narrow", Arial, sans-serif;
       font-size: 1.1rem;
       letter-spacing: -.25em;
       transform: rotate(-8deg);
@@ -482,7 +500,7 @@
       right: 10px;
       bottom: 7px;
       pointer-events: none;
-      font-family: "Marker Felt", "Chalkboard SE", "Comic Sans MS", sans-serif;
+      font-family: "Courier New", monospace;
       font-size: .56rem;
       font-weight: 700;
       letter-spacing: .1em;
@@ -578,7 +596,7 @@
     .track-title {
       margin: 0;
       color: var(--ink);
-      font-family: "Marker Felt", "Chalkboard SE", "Comic Sans MS", sans-serif;
+      font-family: var(--display-font);
       font-size: clamp(2.05rem, 10vw, 4.3rem);
       font-weight: 700;
       line-height: .92;
@@ -760,9 +778,9 @@
 
     .status-text {
       display: block;
-      font-family: "Marker Felt", "Chalkboard SE", "Comic Sans MS", sans-serif;
+      font-family: "Courier New", monospace;
       font-size: 1.25rem;
-      font-weight: 900;
+      font-weight: 700;
       line-height: 1.4;
       letter-spacing: .08em;
       overflow-wrap: anywhere;
@@ -916,7 +934,7 @@
           </div>
           <p class="random-note"><span class="dice" aria-hidden="true"></span><strong>00</strong> — СЛУЧАЙНАЯ УЛИЦА</p>
           <button class="print-button" id="connectButton" type="submit">
-            [ Слушать улицу → ]
+            Слушать улицу
           </button>
           <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
         </form>
