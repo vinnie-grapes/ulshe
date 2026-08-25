@@ -11,8 +11,8 @@
     :root {
       --city: #151515;
       --city-light: #252525;
-      --paper: #eeeade;
-      --paper-dark: #d7d1c2;
+      --paper: #f7f7f3;
+      --paper-dark: #e6e6df;
       --ink: #11110f;
       --ink-soft: #55534d;
       --green: #23743a;
@@ -245,11 +245,13 @@
       margin: 0 auto 16px;
       position: relative;
       border: 3px solid var(--ink);
-      border-radius: 49% 51% 48% 52% / 51% 48% 52% 49%;
+      border-radius: 44% 56% 47% 53% / 53% 45% 55% 47%;
       background:
-        radial-gradient(circle at 48% 47%, transparent 0 15%, rgba(255,255,255,.12) 15.5% 16%, transparent 16.5% 28%, rgba(255,255,255,.08) 28.5% 29%, transparent 29.5%),
-        repeating-radial-gradient(circle at 50% 50%, #0c0c0b 0 3px, #242422 3.5px 5px, #11110f 5.5px 8px);
-      box-shadow: 0 0 0 7px var(--paper), 0 0 0 10px var(--ink), 10px 13px 0 rgba(17,17,15,.28);
+        radial-gradient(circle at 49% 48%, transparent 0 17%, rgba(255,255,255,.13) 17.5% 18%, transparent 18.5% 32%, rgba(255,255,255,.09) 32.5% 33%, transparent 33.5%),
+        repeating-radial-gradient(ellipse at 49% 51%, #0b0b0a 0 2px, #282825 2.5px 4px, #10100f 4.5px 7px);
+      outline: 2px solid var(--ink);
+      outline-offset: 5px;
+      box-shadow: 0 0 0 9px var(--paper), 0 0 0 12px var(--ink), 11px 14px 0 rgba(17,17,15,.3);
       transform: rotate(var(--input-turn));
       transition: transform .3s cubic-bezier(.2,.8,.3,1);
     }
@@ -257,10 +259,11 @@
     .access-record::before {
       content: "";
       position: absolute;
-      inset: 5%;
-      border-radius: inherit;
+      inset: 4% 6% 5% 3%;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 47% 53% 44% 56% / 56% 46% 54% 44%;
       background:
-        conic-gradient(from 17deg, transparent 0 9%, rgba(255,255,255,.12) 9.3% 9.7%, transparent 10% 43%, rgba(255,255,255,.08) 43.2% 43.5%, transparent 44% 100%);
+        conic-gradient(from 17deg, transparent 0 9%, rgba(255,255,255,.14) 9.3% 9.7%, transparent 10% 43%, rgba(255,255,255,.09) 43.2% 43.5%, transparent 44% 81%, rgba(255,255,255,.1) 81.2% 81.6%, transparent 82% 100%);
       mix-blend-mode: screen;
       pointer-events: none;
     }
@@ -294,7 +297,7 @@
       z-index: 3;
       padding: 14px 10px;
       border: 3px solid var(--ink);
-      border-radius: 48% 52% 50% 47% / 51% 48% 52% 49%;
+      border-radius: 46% 54% 49% 51% / 53% 47% 55% 45%;
       background:
         radial-gradient(circle at 72% 21%, rgba(17,17,15,.08) 0 1px, transparent 1.5px),
         var(--paper);
@@ -463,7 +466,7 @@
       background:
         repeating-linear-gradient(135deg, transparent 0 5px, rgba(17,17,15,.32) 6px 7px, transparent 8px 11px) left top / 72px 54px no-repeat,
         repeating-linear-gradient(-45deg, transparent 0 6px, rgba(17,17,15,.28) 7px 8px, transparent 9px 12px) right bottom / 82px 48px no-repeat,
-        #f7f5ec;
+        var(--paper);
       border: 3px solid var(--ink);
       border-radius: 1% 2% 1% 3% / 2% 1% 3% 1%;
       outline: 2px solid var(--ink);
@@ -890,7 +893,7 @@
         <form id="codeForm" novalidate>
           <div class="access-record" id="accessRecord">
             <div class="record-label">
-              <span class="record-label-title" aria-hidden="true">УЛИЦЫ ШЕПЧУТ</span>
+              <span class="record-label-title" aria-hidden="true"></span>
               <div class="code-wrap">
                 <label for="codeInput" class="visually-hidden">Двузначный номер трека</label>
                 <input
