@@ -345,7 +345,7 @@
 
     .record-label-note {
       font-family: "Courier New", monospace;
-      font-size: .5rem;
+      font-size: .62rem;
       font-weight: 700;
       letter-spacing: .1em;
     }
@@ -357,7 +357,7 @@
       gap: 8px;
       margin: 2px 0 14px;
       font-family: "Courier New", monospace;
-      font-size: .64rem;
+      font-size: .76rem;
       font-weight: 700;
       letter-spacing: .06em;
       transform: rotate(-.5deg);
@@ -580,6 +580,18 @@
       text-shadow: 2px 2px 0 rgba(17,17,15,.13);
       transform: rotate(-.45deg);
     }
+
+    .track-random-mark {
+      width: .82em;
+      height: .82em;
+      display: inline-block;
+      margin: 0 .08em 0 -.04em;
+      object-fit: contain;
+      vertical-align: -.06em;
+      transform: rotate(-7deg);
+    }
+
+    .track-random-mark[hidden] { display: none; }
 
     .location {
       display: inline-block;
@@ -947,7 +959,7 @@
         </div>
 
         <div class="track-content">
-          <h2 class="track-title" id="trackTitle"></h2>
+          <h2 class="track-title" id="trackTitle"><img class="track-random-mark" id="trackRandomMark" src="assets/icons/dice-zine-flat-ink.png" alt="" aria-hidden="true" hidden><span id="trackTitleText"></span></h2>
           <p class="location" id="trackLocation"></p>
 
           <div class="player">
@@ -998,7 +1010,8 @@
     const feedback = document.getElementById("feedback");
     const locationPhoto = document.getElementById("locationPhoto");
     const photoCode = document.getElementById("photoCode");
-    const trackTitle = document.getElementById("trackTitle");
+    const trackTitleText = document.getElementById("trackTitleText");
+    const trackRandomMark = document.getElementById("trackRandomMark");
     const trackLocation = document.getElementById("trackLocation");
     const statusBlock = document.getElementById("statusBlock");
     const statusText = document.getElementById("statusText");
@@ -1168,7 +1181,8 @@
       currentCode = code;
       document.title = `${track.title || `ТРЕК ${code}`} — УЛИЦЫ ШЕПЧУТ`;
       photoCode.textContent = `ID_${code}`;
-      trackTitle.textContent = `${isRandom ? "[СЛУЧАЙНЫЙ ТРЕК] " : ""}${track.title || `ТРЕК ${code}`}`;
+      trackRandomMark.hidden = !isRandom;
+      trackTitleText.textContent = track.title || `ТРЕК ${code}`;
       trackLocation.textContent = track.location || "Координаты не указаны";
       locationPhoto.src = `img/photo${code}.jpg`;
       locationPhoto.alt = track.location
@@ -1349,8 +1363,8 @@
 
       const shareUrl = getCurrentTrackUrl();
       const shareData = {
-        title: trackTitle.textContent,
-        text: `Послушай этот звук города: ${trackTitle.textContent}`,
+        title: trackTitleText.textContent,
+        text: `Послушай этот звук города: ${trackTitleText.textContent}`,
         url: shareUrl
       };
 
