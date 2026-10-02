@@ -1184,10 +1184,11 @@
       trackRandomMark.hidden = !isRandom;
       trackTitleText.textContent = track.title || `ТРЕК ${code}`;
       trackLocation.textContent = track.location || "Координаты не указаны";
-      locationPhoto.src = `img/photo${code}.jpg`;
       locationPhoto.alt = track.location
         ? `Локация трека: ${track.location}`
         : `Локация трека ${code}`;
+      locationPhoto.dataset.fallbackSrc = `img/photo${code}.jpg`;
+      locationPhoto.src = `img/photo${code}.gif`;
 
       statusText.textContent = (
         trackState === "archived" ? "В АРХИВЕ" :
@@ -1319,6 +1320,11 @@
     });
 
     locationPhoto.addEventListener("error", () => {
+      const fallbackSrc = locationPhoto.dataset.fallbackSrc;
+      if (fallbackSrc && locationPhoto.getAttribute("src") !== fallbackSrc) {
+        locationPhoto.src = fallbackSrc;
+        return;
+      }
       locationPhoto.alt = "Фотография локации не найдена";
       locationPhoto.style.opacity = ".18";
     });
