@@ -1004,6 +1004,7 @@
 
   <script>
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTdv162_Q1nZ1yX5qUpynfjhyrdzPMb4p5CHxHsHGRRjBgXLsuygOZgIBr8jCLaAr8dvNHmJWmDuEnH/pub?output=csv";
+    const GA4_MEASUREMENT_ID = "G-C8F43DP4XK";
 
     const accessScreen = document.getElementById("accessScreen");
     const trackScreen = document.getElementById("trackScreen");
@@ -1035,6 +1036,31 @@
     let isSeeking = false;
     let currentCode = null;
     let copyToastTimer = null;
+    let analyticsEnabled = false;
+    let hasPlayed = false;
+    let hasListenedTenSeconds = false;
+    let hasEnded = false;
+    let listenedSeconds = 0;
+    let lastAudioPosition = null;
+
+    function initAnalytics() {
+      if (!/^G-[A-Z0-9]+$/.test(GA4_MEASUREMENT_ID) || window.location.protocol === "file:") return;
+
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag("js", new Date());
+      window.gtag("config", GA4_MEASUREMENT_ID);
+
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`;
+      document.head.appendChild(script);
+      analyticsEnabled = true;
+    }
+
+    function trackEvent(name, parameters = {}) {
+      if (analyticsEnabled) window.gtag("event", name, parameters);
+    }
 
     function normalizeCode(value) {
       const digits = String(value ?? "").replace(/\D/g, "").slice(0, 2);
@@ -1153,6 +1179,11 @@
       audio.pause();
       audio.removeAttribute("src");
       audio.load();
+      hasPlayed = false;
+      hasListenedTenSeconds = false;
+      hasEnded = false;
+      listenedSeconds = 0;
+      lastAudioPosition = null;
       timeline.value = 0;
       timeline.style.setProperty("--progress", "0%");
       currentTime.textContent = "00:00";
@@ -1178,14 +1209,14 @@
       return "unknown";
     }
 
-    function showTrack(track, isRandom = false) {
+    function showTrack(track, entryMode = "code") {
       const code = track.code;
       const trackState = getTrackState(track.status);
       const destroyed = trackState === "archived";
       currentCode = code;
       document.title = `${track.title || `ТРЕК ${code}`} — УЛИЦЫ ШЕПЧУТ`;
       photoCode.textContent = `ID_${code}`;
-      trackRandomMark.hidden = !isRandom;
+      trackRandomMark.hidden = entryMode !== "random";
       trackTitleText.textContent = track.title || `ТРЕК ${code}`;
       trackLocation.textContent = track.location || "Координаты не указаны";
       locationPhoto.alt = track.location
@@ -1209,15 +1240,16 @@
       resetPlayer();
       audio.src = `audio/track${code}.mp3`;
       audio.load();
+      trackEvent("track_open", { track_code: `ID_${code}`, entry_mode: entryMode });
       transitionScreens(accessScreen, trackScreen);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    function openTrack(code, isRandom = false) {
+    function openTrack(code, entryMode = "code") {
       const normalizedCode = normalizeCode(code);
       const track = trackDatabase?.[normalizedCode];
       if (!track) return false;
-      showTrack(track, isRandom);
+      showTrack(track, entryMode);
       return true;
     }
 
@@ -1260,8 +1292,9 @@
             return;
           }
           setFeedback("СЛУЧАЙНЫЙ СИГНАЛ НАЙДЕН", "loading");
-          openTrack(randomCode, true);
+          openTrack(randomCode, "random");
         } else if (!openTrack(code)) {
+          trackEvent("code_not_found", { submitted_code: `ID_${code}` });
           flashInputError("СИГНАЛ НЕ НАЙДЕН: ПРОВЕРЬТЕ КОД");
           return;
         }
@@ -1289,8 +1322,28 @@
     });
 
     audio.addEventListener("play", updatePlayState);
-    audio.addEventListener("pause", updatePlayState);
-    audio.addEventListener("ended", updatePlayState);
+    audio.addEventListener("playing", () => {
+      lastAudioPosition = audio.currentTime;
+      if (currentCode && !hasPlayed) {
+        hasPlayed = true;
+        trackEvent("track_play", { track_code: `ID_${currentCode}` });
+      }
+    });
+    audio.addEventListener("pause", () => {
+      lastAudioPosition = null;
+      updatePlayState();
+    });
+    audio.addEventListener("seeking", () => { lastAudioPosition = null; });
+    audio.addEventListener("seeked", () => {
+      if (!audio.paused) lastAudioPosition = audio.currentTime;
+    });
+    audio.addEventListener("ended", () => {
+      if (currentCode && !hasEnded) {
+        hasEnded = true;
+        trackEvent("track_end", { track_code: `ID_${currentCode}` });
+      }
+      updatePlayState();
+    });
 
     audio.addEventListener("loadedmetadata", () => {
       duration.textContent = formatTime(audio.duration);
@@ -1302,6 +1355,16 @@
       currentTime.textContent = formatTime(audio.currentTime);
       const progress = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
       timeline.style.setProperty("--progress", `${progress}%`);
+
+      if (!audio.paused && !isSeeking && lastAudioPosition !== null) {
+        const played = audio.currentTime - lastAudioPosition;
+        if (played > 0 && played < 5) listenedSeconds += played;
+        if (currentCode && !hasListenedTenSeconds && listenedSeconds >= 10) {
+          hasListenedTenSeconds = true;
+          trackEvent("track_listen_10s", { track_code: `ID_${currentCode}` });
+        }
+      }
+      lastAudioPosition = audio.currentTime;
     });
 
     audio.addEventListener("error", () => {
@@ -1371,6 +1434,7 @@
     shareButton.addEventListener("click", async () => {
       if (!currentCode) return;
 
+      const sharedCode = currentCode;
       const shareUrl = getCurrentTrackUrl();
       const shareData = {
         title: trackTitleText.textContent,
@@ -1381,6 +1445,7 @@
       if (navigator.share) {
         try {
           await navigator.share(shareData);
+          trackEvent("track_share", { track_code: `ID_${sharedCode}`, share_method: "native" });
           return;
         } catch (error) {
           if (error.name === "AbortError") return;
@@ -1390,6 +1455,7 @@
 
       try {
         await copyText(shareUrl);
+        trackEvent("track_share", { track_code: `ID_${sharedCode}`, share_method: "copy" });
         showCopyToast();
       } catch (error) {
         console.error(error);
@@ -1420,7 +1486,7 @@
 
         if (requestedCode) {
           const normalizedCode = normalizeCode(requestedCode);
-          if (!/^\d{2}$/.test(normalizedCode) || normalizedCode === "00" || !openTrack(normalizedCode)) {
+          if (!/^\d{2}$/.test(normalizedCode) || normalizedCode === "00" || !openTrack(normalizedCode, "direct_link")) {
             flashInputError("ТРЕК ИЗ ССЫЛКИ НЕ НАЙДЕН: ВВЕДИТЕ КОД");
           }
         } else {
@@ -1434,6 +1500,7 @@
       }
     }
 
+    initAnalytics();
     window.addEventListener("load", initDatabase);
   </script>
 </body>
