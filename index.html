@@ -811,6 +811,47 @@
       outline-offset: 3px;
     }
 
+    .telegram-link {
+      width: fit-content;
+      max-width: 100%;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 2px auto 0;
+      padding: 9px 13px;
+      border: 2px solid var(--ink);
+      border-radius: 3% 5% 2% 4% / 7% 3% 6% 4%;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Courier New", monospace;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      line-height: 1.2;
+      text-align: center;
+      text-decoration: none;
+      text-transform: uppercase;
+      box-shadow: 3px 3px 0 var(--ink);
+      transform: rotate(-.6deg);
+      transition: background .12s, color .12s, box-shadow .12s, transform .12s;
+    }
+
+    .telegram-link:hover,
+    .telegram-link:active {
+      background: var(--ink);
+      color: var(--paper);
+      box-shadow: 1px 1px 0 var(--ink);
+      transform: translate(2px, 2px) rotate(-.6deg);
+    }
+
+    .telegram-link:focus-visible {
+      outline: 3px solid var(--ink);
+      outline-offset: 4px;
+    }
+
+    .track-telegram-link { margin: -10px auto 28px; }
+
     .copy-toast {
       position: fixed;
       z-index: 30;
@@ -945,13 +986,14 @@
           </div>
           <p class="random-note">
             <img class="dice" src="assets/icons/dice-zine-flat-ink.png" alt="" width="38" height="38" aria-hidden="true">
-            <strong>00</strong> — СЛУЧАЙНАЯ УЛИЦА
+            <strong>00</strong> — ДОВЕРЬСЯ СЛУЧАЮ
           </p>
           <button class="print-button" id="connectButton" type="submit">
             Слушать улицу
           </button>
           <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
         </form>
+        <a class="telegram-link" href="https://t.me/ulsheru" target="_blank" rel="noopener noreferrer" aria-label="Улицы на связи — Telegram-канал">↗ УЛИЦЫ НА СВЯЗИ</a>
       </div>
     </section>
 
@@ -991,6 +1033,8 @@
           <button class="share-button" id="shareButton" type="button" aria-label="Поделиться текущим треком">
             ↗ Поделиться звуком
           </button>
+
+          <a class="telegram-link track-telegram-link" href="https://t.me/ulsheru" target="_blank" rel="noopener noreferrer" aria-label="Улицы на связи — Telegram-канал">↗ УЛИЦЫ НА СВЯЗИ</a>
 
           <button class="back-button" id="backButton" type="button">← Вернуться в город</button>
         </div>
