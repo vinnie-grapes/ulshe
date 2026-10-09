@@ -745,39 +745,6 @@
       line-height: 1.4;
     }
 
-    .download-button {
-      width: fit-content;
-      min-height: 40px;
-      display: flex;
-      align-items: center;
-      margin: 12px 2px 0 auto;
-      padding: 8px 12px;
-      border: 2px solid var(--ink);
-      border-radius: 3% 5% 2% 4% / 6% 3% 7% 4%;
-      background: var(--paper);
-      color: var(--ink);
-      font-family: "Courier New", monospace;
-      font-size: .72rem;
-      font-weight: 700;
-      letter-spacing: .08em;
-      line-height: 1.2;
-      text-decoration: none;
-      text-transform: uppercase;
-      box-shadow: 3px 3px 0 var(--ink);
-      transform: rotate(.6deg);
-    }
-
-    .download-button:hover,
-    .download-button:active {
-      background: var(--ink);
-      color: var(--paper);
-    }
-
-    .download-button:focus-visible {
-      outline: 3px solid var(--ink);
-      outline-offset: 4px;
-    }
-
     .status-block {
       width: fit-content;
       max-width: 100%;
@@ -813,37 +780,6 @@
     .status-block.is-destroyed { color: var(--red); }
     .status-block.is-unknown { color: var(--ink-soft); }
 
-    .share-button {
-      width: 100%;
-      min-height: 48px;
-      margin: -14px 0 28px;
-      border: 3px solid var(--ink);
-      border-radius: 2% 4% 2% 3% / 9% 5% 8% 4%;
-      background: transparent;
-      color: var(--ink);
-      cursor: pointer;
-      font-family: "Courier New", monospace;
-      font-size: .76rem;
-      font-weight: 900;
-      letter-spacing: .09em;
-      text-transform: uppercase;
-      box-shadow: 4px 4px 0 rgba(17,17,15,.2);
-      transition: color .12s, background .12s, box-shadow .12s, transform .1s;
-      transform: rotate(-.25deg);
-    }
-
-    .share-button:active {
-      transform: translate(3px, 3px) rotate(-.25deg);
-      background: var(--ink);
-      color: var(--paper);
-      box-shadow: 1px 1px 0 rgba(17,17,15,.2);
-    }
-
-    .share-button:focus-visible {
-      outline: 2px solid #fff;
-      outline-offset: 3px;
-    }
-
     .telegram-link {
       width: fit-content;
       max-width: 100%;
@@ -851,6 +787,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 8px;
       margin: 2px auto 0;
       padding: 9px 13px;
       border: 2px solid var(--ink);
@@ -883,7 +820,72 @@
       outline-offset: 4px;
     }
 
-    .track-telegram-link { margin: -10px auto 28px; }
+    .button-icon {
+      flex: 0 0 auto;
+      font-family: Arial, sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .track-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin: 0 0 28px;
+      overflow: hidden;
+      border: 3px solid var(--ink);
+      border-radius: 1% 2% 1% 2% / 5% 2% 4% 3%;
+      background: var(--paper);
+      box-shadow: 5px 5px 0 rgba(17,17,15,.25);
+      transform: rotate(-.2deg);
+    }
+
+    .track-actions .track-action {
+      width: 100%;
+      max-width: none;
+      min-width: 0;
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 0;
+      padding: 10px 8px;
+      border: 0;
+      border-right: 2px solid var(--ink);
+      border-radius: 0;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      font-family: "Courier New", monospace;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      line-height: 1.2;
+      text-align: center;
+      text-decoration: none;
+      text-transform: uppercase;
+      box-shadow: none;
+      transform: none;
+      transition: background .12s, color .12s;
+    }
+
+    .track-actions .track-action:last-child { border-right: 0; }
+
+    .track-actions .track-action:hover,
+    .track-actions .track-action:active {
+      background: var(--ink);
+      color: var(--paper);
+      box-shadow: none;
+      transform: none;
+    }
+
+    .track-actions .track-action:focus-visible {
+      position: relative;
+      z-index: 1;
+      outline: 3px solid var(--ink);
+      outline-offset: -5px;
+    }
 
     .copy-toast {
       position: fixed;
@@ -917,6 +919,10 @@
     .back-button {
       width: 100%;
       min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       border: 0;
       border-top: 2px solid var(--ink);
       border-bottom: 2px solid var(--ink);
@@ -932,14 +938,22 @@
     }
 
     .back-button:active { background: var(--ink); color: var(--paper); }
+    .back-button:focus-visible { outline-color: var(--ink); }
 
     @media (min-width: 620px) {
       .track-screen { padding-top: calc(36px + var(--safe-top)); }
       .track-shell { padding: 18px 18px 30px; }
       .track-content { padding-inline: 8px; }
-      .print-button:hover,
-      .share-button:hover { background: var(--paper); color: var(--ink); box-shadow: 7px 7px 0 var(--ink); transform: translate(-2px, -2px); }
+      .print-button:hover { background: var(--paper); color: var(--ink); box-shadow: 7px 7px 0 var(--ink); transform: translate(-2px, -2px); }
       .play-button:hover { filter: brightness(1.2); }
+    }
+
+    @media (max-width: 649px) {
+      .track-actions { grid-template-columns: 1fr; }
+      .track-actions .track-action:not(:last-child) {
+        border-right: 0;
+        border-bottom: 2px solid var(--ink);
+      }
     }
 
     @media (max-width: 380px) {
@@ -1026,7 +1040,7 @@
           </button>
           <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
         </form>
-        <a class="telegram-link" href="https://t.me/ulsheru" target="_blank" rel="noopener noreferrer" aria-label="Улицы на связи — Telegram-канал">↗ УЛИЦЫ НА СВЯЗИ</a>
+        <a class="telegram-link" href="https://t.me/ulsheru" target="_blank" rel="noopener noreferrer" aria-label="Улицы на связи — Telegram-канал"><span class="button-icon" aria-hidden="true">↗</span><span>УЛИЦЫ НА СВЯЗИ</span></a>
       </div>
     </section>
 
@@ -1058,20 +1072,18 @@
             <p class="audio-message" id="audioMessage" role="status"></p>
           </div>
 
-          <a class="download-button" id="downloadButton">↓ Скачать трек</a>
-
           <div class="status-block is-unknown" id="statusBlock">
             <span class="status-label">СТАТУС</span>
             <span class="status-text" id="statusText"></span>
           </div>
 
-          <button class="share-button" id="shareButton" type="button" aria-label="Поделиться текущим треком">
-            ↗ Поделиться звуком
-          </button>
+          <div class="track-actions" role="group" aria-label="Действия с треком">
+            <a class="track-action" id="downloadButton"><span class="button-icon" aria-hidden="true">↓</span><span>Скачать трек</span></a>
+            <button class="track-action" id="shareButton" type="button" aria-label="Поделиться текущим треком"><span class="button-icon" aria-hidden="true">↗</span><span>Поделиться звуком</span></button>
+            <a class="track-action telegram-link" href="https://t.me/ulsheru" target="_blank" rel="noopener noreferrer" aria-label="Улицы на связи — Telegram-канал"><span class="button-icon" aria-hidden="true">↗</span><span>Улицы на связи</span></a>
+          </div>
 
-          <a class="telegram-link track-telegram-link" href="https://t.me/ulsheru" target="_blank" rel="noopener noreferrer" aria-label="Улицы на связи — Telegram-канал">↗ УЛИЦЫ НА СВЯЗИ</a>
-
-          <button class="back-button" id="backButton" type="button">← Вернуться в город</button>
+          <button class="back-button" id="backButton" type="button"><span class="button-icon" aria-hidden="true">←</span><span>Вернуться в город</span></button>
         </div>
       </article>
     </section>
