@@ -821,7 +821,16 @@
     }
 
     .button-icon {
-      flex: 0 0 auto;
+      display: block;
+      flex: 0 0 22px;
+      width: 22px;
+      height: 22px;
+    }
+
+    .button-icon--back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       font-family: Arial, sans-serif;
       font-size: 1.25rem;
       font-weight: 700;
@@ -1040,7 +1049,7 @@
           </button>
           <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
         </form>
-        <a class="telegram-link" href="https://t.me/ulsheru" target="_blank" rel="noopener noreferrer" aria-label="Улицы на связи — Telegram-канал"><span class="button-icon" aria-hidden="true">↗</span><span>УЛИЦЫ НА СВЯЗИ</span></a>
+        <a class="telegram-link" href="https://t.me/ulsheru" target="_blank" rel="noopener noreferrer" aria-label="Улицы на связи — Telegram-канал"><svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 3 10.3l7 2.5L21 3Z"/><path d="m10 12.8 2.7 7.2L21 3M10 12.8l3.3 3.1M12.7 20l3-2.6"/></svg><span>УЛИЦЫ НА СВЯЗИ</span></a>
       </div>
     </section>
 
@@ -1078,12 +1087,12 @@
           </div>
 
           <div class="track-actions" role="group" aria-label="Действия с треком">
-            <a class="track-action" id="downloadButton"><span class="button-icon" aria-hidden="true">↓</span><span>Скачать трек</span></a>
-            <button class="track-action" id="shareButton" type="button" aria-label="Поделиться текущим треком"><span class="button-icon" aria-hidden="true">↗</span><span>Поделиться звуком</span></button>
-            <a class="track-action telegram-link" href="https://t.me/ulsheru" target="_blank" rel="noopener noreferrer" aria-label="Улицы на связи — Telegram-канал"><span class="button-icon" aria-hidden="true">↗</span><span>Улицы на связи</span></a>
+            <a class="track-action" id="downloadButton"><svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13m-5-5 5 5 5-5M4 21h16"/></svg><span>Скачать трек</span></a>
+            <button class="track-action" id="shareButton" type="button" aria-label="Поделиться текущим треком"><svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13.5a5 5 0 0 0 7.2.4l2.1-2.1a5 5 0 0 0-7.1-7.1l-1.2 1.2M14 10.5a5 5 0 0 0-7.2-.4l-2.1 2.1a5 5 0 0 0 7.1 7.1l1.2-1.2"/></svg><span>Поделиться звуком</span></button>
+            <a class="track-action telegram-link" href="https://t.me/ulsheru" target="_blank" rel="noopener noreferrer" aria-label="Улицы на связи — Telegram-канал"><svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 3 10.3l7 2.5L21 3Z"/><path d="m10 12.8 2.7 7.2L21 3M10 12.8l3.3 3.1M12.7 20l3-2.6"/></svg><span>Улицы на связи</span></a>
           </div>
 
-          <button class="back-button" id="backButton" type="button"><span class="button-icon" aria-hidden="true">←</span><span>Вернуться в город</span></button>
+          <button class="back-button" id="backButton" type="button"><span class="button-icon button-icon--back" aria-hidden="true">←</span><span>Вернуться в город</span></button>
         </div>
       </article>
     </section>
@@ -1096,6 +1105,7 @@
   <script>
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTdv162_Q1nZ1yX5qUpynfjhyrdzPMb4p5CHxHsHGRRjBgXLsuygOZgIBr8jCLaAr8dvNHmJWmDuEnH/pub?output=csv";
     const GA4_MEASUREMENT_ID = "G-C8F43DP4XK";
+    const PUBLIC_SITE_URL = "https://ulshe.ru/";
 
     const accessScreen = document.getElementById("accessScreen");
     const trackScreen = document.getElementById("trackScreen");
@@ -1309,6 +1319,9 @@
       const trackState = getTrackState(track.status);
       const destroyed = trackState === "archived";
       currentCode = code;
+      const trackUrl = new URL(window.location.href);
+      trackUrl.searchParams.set("track", code);
+      window.history.replaceState({}, "", trackUrl);
       document.title = `${track.title || `ТРЕК ${code}`} — УЛИЦЫ ШЕПЧУТ`;
       photoCode.textContent = `ID_${code}`;
       trackRandomMark.hidden = entryMode !== "random";
@@ -1513,8 +1526,12 @@
 
     async function copyText(text) {
       if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        return;
+        try {
+          await navigator.clipboard.writeText(text);
+          return;
+        } catch (error) {
+          console.warn("Clipboard API недоступен, пробуем резервное копирование", error);
+        }
       }
 
       const temporaryInput = document.createElement("textarea");
@@ -1530,7 +1547,7 @@
     }
 
     function getCurrentTrackUrl() {
-      return `${window.location.origin}${window.location.pathname}?track=${encodeURIComponent(currentCode)}`;
+      return `${PUBLIC_SITE_URL}?track=${encodeURIComponent(currentCode)}`;
     }
 
     shareButton.addEventListener("click", async () => {
@@ -1544,7 +1561,7 @@
         url: shareUrl
       };
 
-      if (navigator.share) {
+      if (navigator.share && window.matchMedia("(pointer: coarse)").matches) {
         try {
           await navigator.share(shareData);
           trackEvent("track_share", { track_code: `ID_${sharedCode}`, share_method: "native" });
