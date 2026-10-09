@@ -1136,6 +1136,7 @@
     const photoFrame = locationPhoto.closest(".photo-frame");
 
     let trackDatabase = null;
+    let trackDatabasePromise = null;
     let isSeeking = false;
     let currentCode = null;
     let copyToastTimer = null;
@@ -1227,16 +1228,32 @@
       }, {});
     }
 
-    async function loadTrackDatabase() {
-      if (trackDatabase) return trackDatabase;
+    function loadTrackDatabase() {
+      if (trackDatabase) return Promise.resolve(trackDatabase);
+      if (trackDatabasePromise) return trackDatabasePromise;
       if (!GOOGLE_SHEET_CSV_URL || GOOGLE_SHEET_CSV_URL.includes("ССЫЛКА_")) {
-        throw new Error("Сначала укажите CSV-ссылку Google Таблицы в коде");
+        return Promise.reject(new Error("Сначала укажите CSV-ссылку Google Таблицы в коде"));
       }
 
-      const response = await fetch(GOOGLE_SHEET_CSV_URL, { cache: "no-store" });
-      if (!response.ok) throw new Error(`Google Таблица недоступна (${response.status})`);
-      trackDatabase = csvToDatabase(await response.text());
-      return trackDatabase;
+      trackDatabasePromise = (async () => {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 15000);
+        try {
+          const response = await fetch(GOOGLE_SHEET_CSV_URL, { cache: "no-store", signal: controller.signal });
+          if (!response.ok) throw new Error(`Google Таблица недоступна (${response.status})`);
+          trackDatabase = csvToDatabase(await response.text());
+          return trackDatabase;
+        } catch (error) {
+          if (error.name === "AbortError") throw new Error("ЗАГРУЗКА ЗАНЯЛА СЛИШКОМ МНОГО ВРЕМЕНИ. ПОПРОБУЙТЕ ЕЩЁ РАЗ");
+          throw error;
+        } finally {
+          window.clearTimeout(timeout);
+        }
+      })().catch((error) => {
+        trackDatabasePromise = null;
+        throw error;
+      });
+      return trackDatabasePromise;
     }
 
     function setFeedback(message = "", state = "") {
@@ -1608,8 +1625,10 @@
       const requestedCode = new URLSearchParams(window.location.search).get("track");
 
       try {
-        connectButton.disabled = true;
-        if (requestedCode) setFeedback("ЗАГРУЗКА ПЕРЕДАННОГО СИГНАЛА...", "loading");
+        if (requestedCode) {
+          connectButton.disabled = true;
+          setFeedback("ЗАГРУЗКА ПЕРЕДАННОГО СИГНАЛА...", "loading");
+        }
         await loadTrackDatabase();
 
         if (requestedCode) {
@@ -1617,19 +1636,19 @@
           if (!/^\d{2}$/.test(normalizedCode) || normalizedCode === "00" || !openTrack(normalizedCode, "direct_link")) {
             flashInputError("ТРЕК ИЗ ССЫЛКИ НЕ НАЙДЕН: ВВЕДИТЕ КОД");
           }
-        } else {
-          setFeedback();
         }
       } catch (error) {
         console.error(error);
-        flashInputError(error.message || "НЕ УДАЛОСЬ ЗАГРУЗИТЬ БАЗУ ТРЕКОВ");
+        if (requestedCode || !connectButton.disabled) {
+          setFeedback("НЕ УДАЛОСЬ ЗАГРУЗИТЬ ТРЕКИ. ВВЕДИТЕ КОД И ПОПРОБУЙТЕ ЕЩЁ РАЗ", "error");
+        }
       } finally {
-        connectButton.disabled = false;
+        if (requestedCode) connectButton.disabled = false;
       }
     }
 
     initAnalytics();
-    window.addEventListener("load", initDatabase);
+    initDatabase();
   </script>
 </body>
 </html>
