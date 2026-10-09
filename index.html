@@ -745,6 +745,39 @@
       line-height: 1.4;
     }
 
+    .download-button {
+      width: fit-content;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      margin: 12px 2px 0 auto;
+      padding: 8px 12px;
+      border: 2px solid var(--ink);
+      border-radius: 3% 5% 2% 4% / 6% 3% 7% 4%;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Courier New", monospace;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      line-height: 1.2;
+      text-decoration: none;
+      text-transform: uppercase;
+      box-shadow: 3px 3px 0 var(--ink);
+      transform: rotate(.6deg);
+    }
+
+    .download-button:hover,
+    .download-button:active {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .download-button:focus-visible {
+      outline: 3px solid var(--ink);
+      outline-offset: 4px;
+    }
+
     .status-block {
       width: fit-content;
       max-width: 100%;
@@ -1025,6 +1058,8 @@
             <p class="audio-message" id="audioMessage" role="status"></p>
           </div>
 
+          <a class="download-button" id="downloadButton">↓ Скачать трек</a>
+
           <div class="status-block is-unknown" id="statusBlock">
             <span class="status-label">СТАТУС</span>
             <span class="status-text" id="statusText"></span>
@@ -1071,6 +1106,7 @@
     const currentTime = document.getElementById("currentTime");
     const duration = document.getElementById("duration");
     const audioMessage = document.getElementById("audioMessage");
+    const downloadButton = document.getElementById("downloadButton");
     const backButton = document.getElementById("backButton");
     const shareButton = document.getElementById("shareButton");
     const telegramLinks = document.querySelectorAll(".telegram-link");
@@ -1224,6 +1260,8 @@
       audio.pause();
       audio.removeAttribute("src");
       audio.load();
+      downloadButton.removeAttribute("href");
+      downloadButton.removeAttribute("download");
       hasPlayed = false;
       hasListenedTenSeconds = false;
       hasEnded = false;
@@ -1283,7 +1321,10 @@
       );
 
       resetPlayer();
-      audio.src = `audio/track${code}.mp3`;
+      const audioPath = `audio/track${code}.mp3`;
+      audio.src = audioPath;
+      downloadButton.href = audioPath;
+      downloadButton.download = `ulshe-ID_${code}.mp3`;
       audio.load();
       trackEvent("track_open", { track_code: `ID_${code}`, entry_mode: entryMode });
       transitionScreens(accessScreen, trackScreen);
@@ -1364,6 +1405,10 @@
       } else {
         audio.pause();
       }
+    });
+
+    downloadButton.addEventListener("click", () => {
+      if (currentCode) trackEvent("track_download", { track_code: `ID_${currentCode}` });
     });
 
     audio.addEventListener("play", updatePlayState);
