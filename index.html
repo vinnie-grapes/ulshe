@@ -575,10 +575,10 @@
       margin: 0;
       color: var(--ink);
       font-family: var(--display-font);
-      font-size: clamp(1.8rem, 8.5vw, 3.6rem);
+      font-size: clamp(1.5rem, 5.6vw, 2.5rem);
       font-weight: 700;
-      line-height: .92;
-      letter-spacing: -.055em;
+      line-height: 1.02;
+      letter-spacing: -.04em;
       overflow-wrap: anywhere;
       text-transform: uppercase;
       text-shadow: 2px 2px 0 rgba(17,17,15,.13);
@@ -1073,6 +1073,7 @@
     const audioMessage = document.getElementById("audioMessage");
     const backButton = document.getElementById("backButton");
     const shareButton = document.getElementById("shareButton");
+    const telegramLinks = document.querySelectorAll(".telegram-link");
     const copyToast = document.getElementById("copyToast");
     const photoFrame = locationPhoto.closest(".photo-frame");
 
@@ -1505,6 +1506,15 @@
         console.error(error);
         showCopyToast("Не удалось скопировать ссылку");
       }
+    });
+
+    telegramLinks.forEach((link) => {
+      link.addEventListener("click", () => {
+        const buttonLocation = link.closest("#trackScreen") ? "track" : "home";
+        const parameters = { button_location: buttonLocation };
+        if (buttonLocation === "track" && currentCode) parameters.track_code = `ID_${currentCode}`;
+        trackEvent("telegram_open", parameters);
+      });
     });
 
     backButton.addEventListener("click", () => {
