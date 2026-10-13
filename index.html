@@ -408,6 +408,7 @@
 
     .print-button:focus-visible,
     .play-button:focus-visible,
+    .repeat-button:focus-visible,
     .back-button:focus-visible,
     .timeline:focus-visible {
       outline: 2px solid #fff;
@@ -726,6 +727,7 @@
 
     .time-row {
       display: flex;
+      align-items: center;
       justify-content: space-between;
       margin-top: -2px;
       color: var(--ink-soft);
@@ -734,6 +736,31 @@
       font-weight: 700;
       letter-spacing: .08em;
     }
+
+    .repeat-button {
+      width: 44px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      padding: 5px;
+      border: 2px solid var(--ink);
+      border-radius: 8% 5% 9% 6% / 7% 10% 5% 8%;
+      background: var(--paper);
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: 2px 2px 0 var(--ink);
+      transform: rotate(-2deg);
+    }
+
+    .repeat-button[aria-pressed="true"] {
+      background: var(--ink);
+      color: var(--paper);
+      box-shadow: 2px 2px 0 var(--ink-soft);
+    }
+
+    .repeat-button:active { transform: translate(2px, 2px) rotate(-2deg); box-shadow: none; }
+    .repeat-button:focus-visible { outline-color: var(--ink); }
+    .repeat-button svg { width: 24px; height: 24px; }
 
     .audio-message {
       min-height: 1em;
@@ -1074,6 +1101,12 @@
                 <input class="timeline" id="timeline" type="range" min="0" max="100" value="0" step="0.1" aria-label="Позиция в треке">
                 <div class="time-row" aria-live="off">
                   <span id="currentTime">00:00</span>
+                  <button class="repeat-button" id="repeatButton" type="button" aria-label="Включить повтор трека" aria-pressed="false" title="Повторять трек">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M17 3l3 3-3 3M20 6H7a3 3 0 0 0-3 3v2M7 21l-3-3 3-3m-3 3h13a3 3 0 0 0 3-3v-2"/>
+                      <path d="M12 10v5m-1.5-3.5L12 10"/>
+                    </svg>
+                  </button>
                   <span id="duration">--:--</span>
                 </div>
               </div>
@@ -1124,6 +1157,7 @@
     const audio = document.getElementById("audio");
     const playButton = document.getElementById("playButton");
     const playIcon = document.getElementById("playIcon");
+    const repeatButton = document.getElementById("repeatButton");
     const timeline = document.getElementById("timeline");
     const currentTime = document.getElementById("currentTime");
     const duration = document.getElementById("duration");
@@ -1295,8 +1329,15 @@
       playButton.classList.toggle("is-playing", isPlaying);
     }
 
+    function setRepeat(enabled) {
+      repeatButton.setAttribute("aria-pressed", String(enabled));
+      repeatButton.setAttribute("aria-label", enabled ? "Выключить повтор трека" : "Включить повтор трека");
+      repeatButton.title = enabled ? "Выключить повтор" : "Повторять трек";
+    }
+
     function resetPlayer() {
       audio.pause();
+      setRepeat(false);
       audio.removeAttribute("src");
       audio.load();
       downloadButton.removeAttribute("href");
@@ -1449,6 +1490,10 @@
       }
     });
 
+    repeatButton.addEventListener("click", () => {
+      setRepeat(repeatButton.getAttribute("aria-pressed") !== "true");
+    });
+
     downloadButton.addEventListener("click", () => {
       if (currentCode) trackEvent("track_download", { track_code: `ID_${currentCode}` });
     });
@@ -1469,12 +1514,23 @@
     audio.addEventListener("seeked", () => {
       if (!audio.paused) lastAudioPosition = audio.currentTime;
     });
-    audio.addEventListener("ended", () => {
+    audio.addEventListener("ended", async () => {
       if (currentCode && !hasEnded) {
         hasEnded = true;
         trackEvent("track_end", { track_code: `ID_${currentCode}` });
       }
-      updatePlayState();
+      if (repeatButton.getAttribute("aria-pressed") === "true") {
+        audio.currentTime = 0;
+        try {
+          await audio.play();
+        } catch (error) {
+          console.error(error);
+          audioMessage.textContent = "НЕ УДАЛОСЬ ПОВТОРИТЬ ТРЕК — НАЖМИТЕ ▶";
+          updatePlayState();
+        }
+      } else {
+        updatePlayState();
+      }
     });
 
     audio.addEventListener("loadedmetadata", () => {
