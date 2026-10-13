@@ -727,7 +727,6 @@
 
     .time-row {
       display: flex;
-      align-items: center;
       justify-content: space-between;
       margin-top: -2px;
       color: var(--ink-soft);
@@ -737,30 +736,40 @@
       letter-spacing: .08em;
     }
 
+    .repeat-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 5px;
+    }
+
     .repeat-button {
-      width: 44px;
-      height: 40px;
-      display: grid;
-      place-items: center;
-      padding: 5px;
-      border: 2px solid var(--ink);
-      border-radius: 8% 5% 9% 6% / 7% 10% 5% 8%;
-      background: var(--paper);
-      color: var(--ink);
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 2px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: var(--ink-soft);
       cursor: pointer;
-      box-shadow: 2px 2px 0 var(--ink);
-      transform: rotate(-2deg);
+      font-family: "Courier New", monospace;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      line-height: 1;
+      text-transform: uppercase;
     }
 
     .repeat-button[aria-pressed="true"] {
-      background: var(--ink);
-      color: var(--paper);
-      box-shadow: 2px 2px 0 var(--ink-soft);
+      border-bottom-color: var(--ink);
+      color: var(--ink);
     }
 
-    .repeat-button:active { transform: translate(2px, 2px) rotate(-2deg); box-shadow: none; }
-    .repeat-button:focus-visible { outline-color: var(--ink); }
-    .repeat-button svg { width: 24px; height: 24px; }
+    .repeat-button:hover { color: var(--ink); }
+    .repeat-button:active { transform: translateY(1px); }
+    .repeat-button:focus-visible { outline-color: var(--ink); outline-offset: 1px; }
+    .repeat-button svg { width: 18px; height: 18px; }
 
     .audio-message {
       min-height: 1em;
@@ -1101,13 +1110,16 @@
                 <input class="timeline" id="timeline" type="range" min="0" max="100" value="0" step="0.1" aria-label="Позиция в треке">
                 <div class="time-row" aria-live="off">
                   <span id="currentTime">00:00</span>
+                  <span id="duration">--:--</span>
+                </div>
+                <div class="repeat-row">
                   <button class="repeat-button" id="repeatButton" type="button" aria-label="Включить повтор трека" aria-pressed="false" title="Повторять трек">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <path d="M17 3l3 3-3 3M20 6H7a3 3 0 0 0-3 3v2M7 21l-3-3 3-3m-3 3h13a3 3 0 0 0 3-3v-2"/>
                       <path d="M12 10v5m-1.5-3.5L12 10"/>
                     </svg>
+                    <span>Повтор</span>
                   </button>
-                  <span id="duration">--:--</span>
                 </div>
               </div>
             </div>
