@@ -129,8 +129,7 @@
       transform: rotate(-.7deg) skewY(-.18deg);
     }
 
-    .terminal::before,
-    .terminal::after {
+    .terminal::before {
       content: "";
       position: absolute;
       z-index: 2;
@@ -141,7 +140,6 @@
     }
 
     .terminal::before { width: 38%; top: 17px; right: 24px; transform: rotate(-2deg); }
-    .terminal::after { width: 24%; right: 22px; bottom: 18px; transform: rotate(2deg); }
 
     .terminal form { position: relative; z-index: 3; }
 
@@ -873,12 +871,6 @@
     .soundcloud-link {
       width: 44px;
       padding-inline: 10px;
-    }
-
-    .soundcloud-link .button-icon {
-      flex-basis: 19px;
-      width: 19px;
-      height: 19px;
     }
 
     .telegram-link:hover,
