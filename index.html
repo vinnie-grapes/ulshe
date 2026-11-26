@@ -826,7 +826,19 @@
     .status-block.is-destroyed { color: var(--red); }
     .status-block.is-unknown { color: var(--ink-soft); }
 
-    .telegram-link {
+    .access-links {
+      --link-rotation: 0deg;
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      transform: rotate(-.6deg);
+    }
+
+    .telegram-link,
+    .soundcloud-link {
       width: fit-content;
       max-width: 100%;
       min-height: 42px;
@@ -849,19 +861,38 @@
       text-decoration: none;
       text-transform: uppercase;
       box-shadow: 3px 3px 0 var(--ink);
-      transform: rotate(-.6deg);
+      transform: rotate(var(--link-rotation, -.6deg));
       transition: background .12s, color .12s, box-shadow .12s, transform .12s;
     }
 
+    .access-links > a {
+      margin-inline: 0;
+      border-radius: 5px 8px 3px 7px / 3px 1px 3px 2px;
+    }
+
+    .soundcloud-link {
+      width: 44px;
+      padding-inline: 10px;
+    }
+
+    .soundcloud-link .button-icon {
+      flex-basis: 19px;
+      width: 19px;
+      height: 19px;
+    }
+
     .telegram-link:hover,
-    .telegram-link:active {
+    .telegram-link:active,
+    .soundcloud-link:hover,
+    .soundcloud-link:active {
       background: var(--ink);
       color: var(--paper);
       box-shadow: 1px 1px 0 var(--ink);
-      transform: translate(2px, 2px) rotate(-.6deg);
+      transform: translate(2px, 2px) rotate(var(--link-rotation, -.6deg));
     }
 
-    .telegram-link:focus-visible {
+    .telegram-link:focus-visible,
+    .soundcloud-link:focus-visible {
       outline: 3px solid var(--ink);
       outline-offset: 4px;
     }
@@ -1099,7 +1130,15 @@
           </button>
           <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
         </form>
-        <a class="telegram-link" href="https://t.me/ulsheru" target="_blank" rel="noopener noreferrer" aria-label="Улицы на связи — Telegram-канал"><svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 3 10.3l7 2.5L21 3Z"/><path d="m10 12.8 2.7 7.2L21 3M10 12.8l3.3 3.1M12.7 20l3-2.6"/></svg><span>УЛИЦЫ НА СВЯЗИ</span></a>
+        <div class="access-links">
+          <a class="telegram-link" href="https://t.me/ulsheru" target="_blank" rel="noopener noreferrer" aria-label="Улицы на связи — Telegram-канал"><svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 3 10.3l7 2.5L21 3Z"/><path d="m10 12.8 2.7 7.2L21 3M10 12.8l3.3 3.1M12.7 20l3-2.6"/></svg><span>УЛИЦЫ НА СВЯЗИ</span></a>
+          <a class="soundcloud-link" href="https://soundcloud.com/vinnie-grapes/sets/uliczy-shepchut" target="_blank" rel="noopener noreferrer" aria-label="Плейлист «Улицы шепчут» на SoundCloud" title="SoundCloud">
+            <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M1.5 13v2m2.3-3.4v4.8m2.4-6.1v6.5m2.4-8.3v8.3m2.4-9.8v9.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              <path d="M13 6.7a5.3 5.3 0 0 1 6.6 4.1 3.4 3.4 0 1 1 .5 6.7H13z" fill="currentColor"/>
+            </svg>
+          </a>
+        </div>
       </div>
     </section>
 
